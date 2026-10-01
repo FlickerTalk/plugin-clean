@@ -46,6 +46,9 @@ or encoded again**, so the picture does not lose quality.
 | WebP | `EXIF`, `XMP `, C2PA | the colour profile (`ICCP`) |
 | HEIC/HEIF | the Exif and XMP items and C2PA, **overwritten with zeros in place** (the file keeps its size: rewriting HEIF boxes would risk breaking the image) | the colour profile |
 
+The report names the fields people most often worry about; the cleaning removes the **whole
+blocks**, including fields the report does not name.
+
 Not removed, and the result says so: the **thumbnail item** of a HEIC (a small copy of the same
 picture), and anything a format keeps where the cleaner does not look. A photo goes out as
 `photo.jpg` (`.png`, `.webp`, `.heic`): a camera names its files by the date and time they were
