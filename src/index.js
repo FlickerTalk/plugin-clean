@@ -178,7 +178,7 @@ class Clean extends HTMLElement {
   fail(error) {
     // Anything that is not one of our reasons is a file that would not read.
     this.reason = ["unsupported", "broken", "locked"].includes(error?.reason) ? error.reason : "broken";
-    if (error?.reason === undefined) console.warn("clean failed", error);
+    if (error?.reason === undefined) console.warn("clean failed", error?.name); // never the file's contents
     this.state = "error";
   }
 
@@ -237,10 +237,11 @@ class Clean extends HTMLElement {
     let html = "";
     if (removed.length) html += `<h2>✅ ${T("removed")}</h2>${this.list("removed", removed)}`;
     if (remaining.length) html += `<h2>⚠️ ${T("notRemoved")}</h2>${this.list("remaining", remaining)}`;
+    if (!removed.length && !remaining.length) html += `<p class="intro">✅ ${T("nothing")}</p>`;
     const keptRows = [];
     if (kept?.orientation) keptRows.push(`<li data-group="orientation"><span class="e">🧭</span><span>${T("orientation")}</span></li>`);
     if (kept?.colour) keptRows.push(`<li data-group="colour"><span class="e">🎨</span><span>${T("colour")}</span></li>`);
-    if (keptRows.length) html += `<h2>🔒 ${T("kept")}</h2><ul data-section="kept">${keptRows.join("")}</ul>`;
+    if (keptRows.length) html += `<h2>📌 ${T("kept")}</h2><ul data-section="kept">${keptRows.join("")}</ul>`;
     html += `<p class="same">${T(kind === "pdf" ? "pdfSame" : "pictureSame")}</p>`;
     html += `<p class="same">${T("newName", { name })}</p>`;
     html += `<div class="actions">

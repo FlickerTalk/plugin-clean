@@ -182,6 +182,19 @@ describe("a photo", () => {
     expect(core.ft.send.mock.calls[0].slice(0, 2)).toEqual(["photo.heic", "image/heic"]);
   });
 
+  it("says when a photo hides nothing, before and after cleaning", async () => {
+    const { cleanImage } = await import("../src/image.js");
+    const bare = Buffer.from(cleanImage(new Uint8Array(fixture("photo.png")))).toString("base64");
+    await core.open({ file: { name: "photo.png", mime: "image/png", data: bare } });
+    await settle();
+    expect(text()).toContain("No hidden data found.");
+    button("clean").click();
+    await settle();
+    expect(inside().querySelector('[data-section="removed"]')).toBe(null);
+    expect(text()).toContain("No hidden data found.");
+    expect(row("kept", "colour")).toBeTruthy();
+  });
+
   it("starts again with another file", async () => {
     await core.open({ file: file("photo.jpg", "image/jpeg") });
     await settle();
