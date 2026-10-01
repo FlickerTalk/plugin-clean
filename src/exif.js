@@ -105,7 +105,7 @@ function commentText(value) {
 
 /** Where each thing exifr reads goes in the report (`findings` is a report.js Findings). */
 export function collect(read, findings) {
-  const { ifd0 = {}, exif = {}, gps, ifd1, xmp = {}, dc = {}, iptc = {}, ihdr = {}, photoshop = {} } = read;
+  const { ifd0 = {}, exif = {}, gps, ifd1, xmp = {}, dc = {}, iptc = {}, ihdr = {}, photoshop = {}, pdf = {} } = read;
 
   if (gps) {
     const { latitude, longitude } = gps;
@@ -140,6 +140,7 @@ export function collect(read, findings) {
   findings.add("software", text(xmp.CreatorTool));
   findings.add("software", text(ihdr.Software));
   findings.add("software", text(iptc.OriginatingProgram));
+  findings.add("software", text(pdf.Producer));
 
   for (const key of ["SerialNumber", "LensSerialNumber", "ImageUniqueID"]) findings.add("serial", text(exif[key]));
 
@@ -148,6 +149,7 @@ export function collect(read, findings) {
   for (const key of ["title", "description", "subject"]) findings.add("comment", text(dc[key]));
   for (const key of ["Caption", "Headline", "Keywords", "ObjectName"]) findings.add("comment", text(iptc[key]));
   for (const key of ["Title", "Comment", "Description", "Disclaimer", "Warning"]) findings.add("comment", text(ihdr[key]));
+  findings.add("comment", text(pdf.Keywords));
 
   if (ifd1 && (ifd1.ThumbnailLength > 0 || ifd1.ThumbnailOffset > 0)) findings.add("thumbnail", null);
   if (read.makerNote) findings.add("other", "MakerNote");
