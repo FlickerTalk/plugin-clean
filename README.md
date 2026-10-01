@@ -26,7 +26,8 @@ phone's language:
 
 📍 location (coordinates, or "empty" when Android's photo picker already zeroed them) · 📱 phone or
 camera · 🕒 dates · 👤 author and copyright · 🛠️ program · 🔢 serial numbers and unique IDs ·
-📝 titles, descriptions and comments · 🖼️ thumbnails · 🎞️ the video of a motion photo · ➕ other
+📝 titles, descriptions and comments · 🖼️ thumbnails and other pictures inside the file (a preview,
+an HDR gain map, a depth map) · 🎞️ the video of a motion photo · ➕ other
 data after the picture · 🏷️ Content Credentials (C2PA) · 🆔 the PDF's file identifier · 💬 authors
 of PDF comments · 📎 attachments · ℹ️ anything else.
 
@@ -41,12 +42,13 @@ or encoded again**, so the picture does not lose quality.
 
 | Format | Removed | Kept on purpose |
 | --- | --- | --- |
-| JPEG | EXIF (with GPS, maker notes and its thumbnail), XMP, IPTC, comments, C2PA, other APP segments, and everything after the end of the image (the video of a motion photo, MPF previews) | the orientation (a small EXIF with only that tag, or the photo would turn) and the colour profile |
+| JPEG | EXIF (with GPS, maker notes and its thumbnail), XMP, IPTC, comments, C2PA, other APP segments, and everything after the end of the image (the video of a motion photo, MPF previews, an Ultra HDR gain map) | the orientation (a small EXIF with only that tag, or the photo would turn) and the colour profile |
 | PNG | `tEXt`, `zTXt`, `iTXt` (XMP), `eXIf`, `tIME`, C2PA | the colour profile (`iCCP`) |
 | WebP | `EXIF`, `XMP `, C2PA | the colour profile (`ICCP`) |
 | HEIC/HEIF | the Exif and XMP items and C2PA, **overwritten with zeros in place** (the file keeps its size: rewriting HEIF boxes would risk breaking the image) | the colour profile |
 
-The report names the fields people most often worry about; the cleaning removes the **whole
+An Ultra HDR photo loses its gain map: on an HDR screen it shows as an ordinary photo, as on any
+other screen. The report names the fields people most often worry about; the cleaning removes the **whole
 blocks**, including fields the report does not name.
 
 Not removed, and the result says so: the **thumbnail item** of a HEIC (a small copy of the same

@@ -169,6 +169,16 @@ describe("a photo", () => {
     expect(row("removed", "motion")).toBeTruthy();
   });
 
+  it("names another picture hidden after the image, and removes it", async () => {
+    const twice = Buffer.concat([fixture("wiped-gps.jpg"), fixture("wiped-gps.jpg")]).toString("base64");
+    await core.open({ file: { name: "PXL_1.jpg", mime: "image/jpeg", data: twice } });
+    await settle();
+    expect(row("found", "embedded").textContent).toContain("Other pictures inside the file");
+    button("clean").click();
+    await settle();
+    expect(row("removed", "embedded")).toBeTruthy();
+  });
+
   it("cleans a HEIF it cannot show, and says the thumbnail inside could not be removed", async () => {
     await core.open({ file: file("photo.heic", "image/heic", "IMG_0001.HEIC") });
     await settle();

@@ -97,6 +97,25 @@ describe("the report of a photo", () => {
     expect(values(report, "motion")).toHaveLength(1);
   });
 
+  it("knows a Samsung motion photo (its video after a MotionPhoto_Data marker) and cuts it", async () => {
+    const tail = new TextEncoder().encode("MotionPhoto_Data\0\0\0\x18ftypmp42\0\0\0\0mp42isomFAKEVIDEO");
+    const bytes = new Uint8Array([...fixture("wiped-gps.jpg"), ...tail]);
+    expect(values(await inspectImage(bytes), "motion")).toHaveLength(1);
+    expect(latin1(cleanImage(bytes))).not.toContain("MotionPhoto_Data");
+  });
+
+  it("tells a second picture after the image (a preview, an HDR gain map) from a video behind it", async () => {
+    const second = fixture("wiped-gps.jpg");
+    const video = new TextEncoder().encode("\0\0\0\x18ftypisom\0\0\0\0isommp42FAKEVIDEO");
+    const bytes = new Uint8Array([...fixture("wiped-gps.jpg"), ...second, ...video]);
+    const report = await inspectImage(bytes);
+    expect(values(report, "embedded")).toHaveLength(1);
+    expect(values(report, "motion")).toHaveLength(1);
+    expect(values(report, "thumbnail")).toHaveLength(1); // the EXIF thumbnail, not the second picture
+    const after = cleanImage(bytes);
+    expect(after.length).toBeLessThan(fixture("wiped-gps.jpg").length);
+  });
+
   it("finds other bytes hidden after the end of the image, and cuts them", async () => {
     const tail = new TextEncoder().encode("SECRET TRAILER");
     const bytes = new Uint8Array([...fixture("wiped-gps.jpg"), ...tail]);

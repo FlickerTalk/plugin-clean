@@ -18,6 +18,7 @@ const GROUPS = [
   ["serial", "🔢"],
   ["comment", "📝"],
   ["thumbnail", "🖼️"],
+  ["embedded", "🖼️"],
   ["motion", "🎞️"],
   ["extra", "➕"],
   ["c2pa", "🏷️"],

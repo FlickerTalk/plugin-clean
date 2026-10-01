@@ -43,8 +43,9 @@ export function cleanImage(bytes) {
 
 /**
  * What a photo says about itself: `{kind, findings, kept}`. A finding is `{group, value}` where the
- * group is location, device, dates, author, software, serial, comment, thumbnail, motion (the
- * video of a motion photo), extra (other bytes after the image), c2pa or other; a place whose values were zeroed is `{group: "location", value: null, empty: true}`.
+ * group is location, device, dates, author, software, serial, comment, thumbnail, embedded (another
+ * picture after the image), motion (the video of a motion photo), extra (other bytes after the
+ * image), c2pa or other; a place whose values were zeroed is `{group: "location", value: null, empty: true}`.
  * `kept` is what cleaning keeps on purpose: the orientation and whether there is a colour profile.
  */
 export async function inspectImage(bytes) {
@@ -64,10 +65,7 @@ export async function inspectImage(bytes) {
   if (kind === "png") pngExtras(bytes, findings);
   if (kind === "heic" && heifHasThumbnail(bytes)) findings.add("thumbnail", null);
   for (const type of types) {
-    if (type === "Trailing data (embedded video)") findings.add("motion", null);
-    else if (type === "Trailing data (embedded JPEG)") findings.add("thumbnail", null);
-    else if (type === "Trailing data") findings.add("extra", null);
-    else if (type === "Content Credentials (C2PA)") findings.add("c2pa", null);
+    if (type === "Content Credentials (C2PA)") findings.add("c2pa", null);
     else if (type === "JUMBF") findings.add("other", "JUMBF");
   }
 
@@ -108,9 +106,22 @@ const withoutExifHeader = (bytes) => (ascii(bytes, 0, 6) === "Exif\0\0" ? bytes.
 
 // ---- What exifr does not read ----
 
-/** A JPEG's comment segments, and a thumbnail in its JFIF header (rare, and kept by picscrub). */
+/**
+ * A JPEG's comment segments, a thumbnail in its JFIF header (rare, and kept by picscrub), and what
+ * follows the end of the image, all of which cleaning cuts: another picture (an MPF preview, an
+ * Ultra HDR gain map, a depth map), the video of a motion photo (Google writes the MP4 straight
+ * after, Samsung after a `MotionPhoto_Data` marker), or other bytes.
+ */
 function jpegExtras(bytes, findings) {
   for (const segment of jpeg.parseSegments(bytes)) {
+    if (segment.marker === 0x0000) {
+      const tail = new TextDecoder("latin1").decode(segment.data);
+      const picture = tail.startsWith("\xff\xd8\xff");
+      const video = tail.includes("MotionPhoto_Data") || /ftyp(mp4|mp42|isom|iso\d|qt  |avc1|M4V)/.test(tail);
+      if (picture) findings.add("embedded", null);
+      if (video) findings.add("motion", null);
+      if (!picture && !video) findings.add("extra", null);
+    }
     if (segment.marker === 0xfffe) findings.add("comment", new TextDecoder("latin1").decode(segment.data.subarray(4)));
     if (segment.marker === 0xffe0) {
       const head = ascii(segment.data, 4, 5);
