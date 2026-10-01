@@ -4,17 +4,10 @@
 // change by a single pixel. The orientation is kept (or the photo would turn) and so is the colour
 // profile (it says how to show the colours, nothing about the person).
 import { heic, jpeg, png, webp } from "picscrub";
-import { readExif } from "./exif.js";
+import { collect, readBlocks, readExif } from "./exif.js";
+import { CleanError, Findings } from "./report.js";
 
-/** Why a file could not be read or cleaned: `unsupported` (not a kind Clean knows) or `broken`. */
-export class CleanError extends Error {
-  constructor(reason, cause) {
-    super(reason);
-    this.name = "CleanError";
-    this.reason = reason;
-    this.cause = cause;
-  }
-}
+export { CleanError };
 
 const HANDLERS = { jpeg, png, webp, heic };
 
@@ -98,138 +91,20 @@ async function readsOf(kind, bytes) {
     const chunks = riffChunks(bytes);
     const exif = chunks.find(([fourcc]) => fourcc === "EXIF")?.[1];
     const xmp = chunks.find(([fourcc]) => fourcc === "XMP ")?.[1];
-    reads.push(await readExif(wrapped(exif && withoutExifHeader(exif), xmp)));
+    reads.push(await readBlocks(exif && withoutExifHeader(exif), xmp));
   } else {
     reads.push(await readExif(bytes));
   }
   if (kind === "heic") {
     for (const payload of heic.getMetadataPayloads(bytes)) {
       const text = ascii(payload, 0, Math.min(payload.length, 64));
-      if (text.includes("<?xpacket") || text.includes("<x:xmpmeta")) reads.push(await readExif(wrapped(null, payload)));
+      if (text.includes("<?xpacket") || text.includes("<x:xmpmeta")) reads.push(await readBlocks(null, payload));
     }
   }
   return reads.filter(Boolean);
 }
 
 const withoutExifHeader = (bytes) => (ascii(bytes, 0, 6) === "Exif\0\0" ? bytes.subarray(6) : bytes);
-
-/** A JPEG with nothing but these blocks, for exifr to read them where it would not look. */
-function wrapped(tiff, xmp) {
-  const segments = [];
-  const segment = (prefix, body) => {
-    const length = 2 + prefix.length + body.length;
-    if (length > 0xffff) return;
-    const out = new Uint8Array(2 + length);
-    out.set([0xff, 0xe1, length >> 8, length & 255]);
-    out.set([...prefix].map((char) => char.charCodeAt(0)), 4);
-    out.set(body, 4 + prefix.length);
-    segments.push(out);
-  };
-  if (tiff) segment("Exif\0\0", tiff);
-  if (xmp) segment("http://ns.adobe.com/xap/1.0/\0", xmp);
-  if (!segments.length) return null;
-  const parts = [new Uint8Array([0xff, 0xd8]), ...segments, new Uint8Array([0xff, 0xd9])];
-  const out = new Uint8Array(parts.reduce((total, part) => total + part.length, 0));
-  let at = 0;
-  for (const part of parts) {
-    out.set(part, at);
-    at += part.length;
-  }
-  return out;
-}
-
-/** The findings, each once. */
-class Findings {
-  constructor() {
-    this.list = [];
-    this.seen = new Set();
-  }
-
-  add(group, value, extra = {}) {
-    if (typeof value === "string") {
-      value = value.replace(/\0+$/g, "").trim();
-      if (!value) return;
-    }
-    if (group === "dates") value = asDate(value);
-    if (value === undefined) return;
-    const key = `${group}|${value instanceof Date ? value.getTime() : JSON.stringify(value)}`;
-    if (this.seen.has(key)) return;
-    this.seen.add(key);
-    this.list.push({ group, value, ...extra });
-  }
-}
-
-/** A date from what files write: a Date, `2026:05:17 18:29:59`, `2026-05-17T18:29:59`, `2026:05:17`. */
-function asDate(value) {
-  if (value instanceof Date) return Number.isNaN(value.getTime()) ? undefined : value;
-  if (typeof value !== "string") return undefined;
-  const match = /^(\d{4})[:-](\d{2})[:-](\d{2})(?:[ T](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(value);
-  if (!match) return value;
-  const [, year, month, day, hour = "0", minute = "0", second = "0"] = match;
-  const date = new Date(+year, +month - 1, +day, +hour, +minute, +second);
-  return Number.isNaN(date.getTime()) ? value : date;
-}
-
-const text = (value) => (typeof value === "string" ? value : Array.isArray(value) ? value.filter((one) => typeof one === "string").join(", ") : undefined);
-
-/** UserComment: 8 bytes of character set, then the text. */
-function commentText(value) {
-  if (typeof value === "string") return value;
-  if (!(value instanceof Uint8Array) || value.length <= 8) return undefined;
-  const unicode = ascii(value, 0, 7) === "UNICODE";
-  const body = value.subarray(8);
-  return unicode ? new TextDecoder("utf-16be").decode(body) : new TextDecoder("latin1").decode(body);
-}
-
-/** Where each thing exifr reads goes in the report. */
-function collect(read, findings) {
-  const { ifd0 = {}, exif = {}, gps, ifd1, xmp = {}, dc = {}, iptc = {}, ihdr = {}, photoshop = {} } = read;
-
-  if (gps) {
-    const { latitude, longitude } = gps;
-    if (Number.isFinite(latitude) && Number.isFinite(longitude) && (latitude !== 0 || longitude !== 0)) {
-      findings.add("location", { latitude, longitude });
-    } else if (gps.GPSLatitude !== undefined || gps.GPSLongitude !== undefined) {
-      findings.add("location", null, { empty: true });
-    }
-    if (typeof gps.GPSDateStamp === "string") findings.add("dates", gps.GPSDateStamp);
-  }
-  for (const key of ["City", "Sublocation", "State", "Country", "ContentLocationName"]) findings.add("location", text(iptc[key]));
-  for (const key of ["City", "State", "Country"]) findings.add("location", text(photoshop[key]));
-
-  for (const key of ["Make", "Model", "HostComputer"]) findings.add("device", text(ifd0[key]));
-  for (const key of ["LensMake", "LensModel"]) findings.add("device", text(exif[key]));
-  findings.add("device", text(ihdr.Source));
-
-  findings.add("dates", ifd0.ModifyDate);
-  for (const key of ["DateTimeOriginal", "CreateDate"]) findings.add("dates", exif[key]);
-  for (const key of ["CreateDate", "ModifyDate", "MetadataDate"]) findings.add("dates", xmp[key]);
-  findings.add("dates", photoshop.DateCreated);
-  findings.add("dates", text(iptc.DateCreated));
-  findings.add("dates", text(ihdr["Creation Time"]));
-
-  for (const key of ["Artist", "Copyright", "XPAuthor"]) findings.add("author", text(ifd0[key]));
-  findings.add("author", text(exif.OwnerName));
-  for (const key of ["creator", "rights"]) findings.add("author", text(dc[key]));
-  for (const key of ["Byline", "CopyrightNotice", "Writer", "Credit", "Contact"]) findings.add("author", text(iptc[key]));
-  for (const key of ["Author", "Copyright"]) findings.add("author", text(ihdr[key]));
-
-  findings.add("software", text(ifd0.Software));
-  findings.add("software", text(xmp.CreatorTool));
-  findings.add("software", text(ihdr.Software));
-  findings.add("software", text(iptc.OriginatingProgram));
-
-  for (const key of ["SerialNumber", "LensSerialNumber", "ImageUniqueID"]) findings.add("serial", text(exif[key]));
-
-  for (const key of ["ImageDescription", "XPComment", "XPTitle", "XPSubject", "XPKeywords"]) findings.add("comment", text(ifd0[key]));
-  findings.add("comment", commentText(exif.UserComment));
-  for (const key of ["title", "description", "subject"]) findings.add("comment", text(dc[key]));
-  for (const key of ["Caption", "Headline", "Keywords", "ObjectName"]) findings.add("comment", text(iptc[key]));
-  for (const key of ["Title", "Comment", "Description", "Disclaimer", "Warning"]) findings.add("comment", text(ihdr[key]));
-
-  if (ifd1 && (ifd1.ThumbnailLength > 0 || ifd1.ThumbnailOffset > 0)) findings.add("thumbnail", null);
-  if (read.makerNote) findings.add("other", "MakerNote");
-}
 
 // ---- What exifr does not read ----
 
