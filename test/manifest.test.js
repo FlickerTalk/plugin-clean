@@ -11,7 +11,7 @@ describe("module.json", () => {
   it("asks only to propose a file in the chat, and opens photos and PDFs", () => {
     expect(manifest.id).toBe("com.flickertalk.clean");
     expect(manifest.name).toBe("Clean");
-    expect(manifest.minCoreVersion).toBe("1.1.0");
+    expect(manifest.minCoreVersion).toBe("1.3.0"); // the core it was tested on: it lends location-outline and sends `dark`
     expect(manifest.components).toEqual(["ft-clean"]);
     expect(manifest.permissions).toEqual({ send: "propose" });
     expect(manifest.opens).toEqual(["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif", "application/pdf"]);

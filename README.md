@@ -85,8 +85,9 @@ Out of scope: Word, Excel and PowerPoint files, video, audio, several files at o
 
 `module.json`: `permissions: { "send": "propose" }`; `opens`: `image/jpeg`, `image/png`,
 `image/webp`, `image/heic`, `image/heif`, `application/pdf`; no `views` (a tap on a photo or PDF
-still opens the usual viewer). It needs FlickerTalk **1.1.0** (`minCoreVersion`), the version that
-brought "Open with". The contract is in [plugin-sdk](https://github.com/FlickerTalk/plugin-sdk).
+still opens the usual viewer). Needs FlickerTalk core **1.3.0** (`minCoreVersion`): it is the core
+it was tested on, the first that lends the `location-outline` icon and passes the app's dark mode in
+`onOpen`. The contract is in [plugin-sdk](https://github.com/FlickerTalk/plugin-sdk).
 
 ## Inside
 
