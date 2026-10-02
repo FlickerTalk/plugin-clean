@@ -20,7 +20,7 @@ describe("module.json", () => {
   });
 
   it("follows the SDK's schema: the fields it knows, their shapes, an English summary", () => {
-    const known = ["id", "name", "version", "minCoreVersion", "components", "summary", "views", "opens", "permissions"];
+    const known = ["id", "name", "version", "minCoreVersion", "components", "summary", "views", "opens", "permissions", "locales"];
     expect(Object.keys(manifest).every((key) => known.includes(key))).toBe(true);
     expect(manifest.id).toMatch(/^[a-z0-9]+(\.[a-z0-9]+)+$/);
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
@@ -31,6 +31,20 @@ describe("module.json", () => {
     expect(manifest.summary.length).toBeLessThanOrEqual(200);
     expect(manifest.summary).toMatch(/^[\x20-\x7e]+$/);
     expect(manifest.summary.toLowerCase()).not.toMatch(/anonym/);
+  });
+
+  it("names and sums up Clean in each of the app's languages, within the schema's limits", () => {
+    const languages = ["es", "pt", "fr", "de", "it", "ro", "ru", "uk", "pl", "tr", "ar", "hi", "bn", "id", "vi", "th", "ja", "ko", "zh-CN", "zh-TW"];
+    const length = (text) => [...text].length; // the schema counts code points, not UTF-16 units
+    expect(Object.keys(manifest.locales ?? {})).toEqual(languages);
+    for (const lang of languages) {
+      const { name, summary, ...rest } = manifest.locales[lang];
+      expect(rest, lang).toEqual({});
+      expect(name.trim(), lang).not.toBe("");
+      expect(length(name), lang).toBeLessThanOrEqual(64);
+      expect(summary.trim(), lang).not.toBe("");
+      expect(length(summary), lang).toBeLessThanOrEqual(200);
+    }
   });
 });
 
