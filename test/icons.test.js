@@ -6,25 +6,35 @@ import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { APP_ICONS, OWN_ICONS, icon } from "../src/icons.js";
 
-// The icons the app lends to plugins: `ICONS` in app/src-tauri/src/plugins.rs, origin/games-section
-// at c3df572 (2026-10-02).
-const LENT_BY_APP = [
-  "add-outline", "alarm-outline", "arrow-back-outline", "arrow-redo-outline", "arrow-undo-outline", "arrow-up-outline",
-  "brush-outline", "calculator-outline", "chatbubble-outline", "checkmark-outline", "close-outline", "cloud-done-outline",
-  "cloud-outline", "cloud-upload-outline", "color-palette-outline", "crop-outline", "document-text-outline", "download-outline",
-  "ellipsis-horizontal-outline", "expand-outline", "eye-outline", "folder-open-outline", "folder-outline", "grid-outline",
-  "hand-left-outline", "image-outline", "key-outline", "link-outline", "location-outline", "lock-closed-outline",
-  "move-outline", "options-outline", "pause-outline", "pencil-outline", "play-outline", "refresh-outline", "remove-outline",
-  "resize-outline", "save-outline", "search-outline", "send-outline", "square-outline", "text-outline", "time-outline",
-  "trash-outline",
-];
+// The icons the app lends to plugins, by the core version that lends them: the files in
+// app/src-tauri/resources/icons/ (`ICONS` in src-tauri/src/plugins.rs). Core 1.3.0: app origin/main
+// at 8fbc3cf (2026-10-02; `location-outline` arrived with it). Clean may only ask for the icons of
+// the core its manifest says it needs (`minCoreVersion`): an older app would draw nothing.
+const LENT_BY_CORE = {
+  "1.3.0": [
+    "add-outline", "alarm-outline", "arrow-back-outline", "arrow-redo-outline", "arrow-undo-outline", "arrow-up-outline",
+    "brush-outline", "calculator-outline", "chatbubble-outline", "checkmark-outline", "close-outline", "cloud-done-outline",
+    "cloud-outline", "cloud-upload-outline", "color-palette-outline", "crop-outline", "document-text-outline", "download-outline",
+    "ellipsis-horizontal-outline", "expand-outline", "eye-outline", "folder-open-outline", "folder-outline", "grid-outline",
+    "hand-left-outline", "image-outline", "key-outline", "link-outline", "location-outline", "lock-closed-outline",
+    "move-outline", "options-outline", "pause-outline", "pencil-outline", "play-outline", "refresh-outline", "remove-outline",
+    "resize-outline", "save-outline", "search-outline", "send-outline", "square-outline", "text-outline", "time-outline",
+    "trash-outline",
+  ],
+};
+const manifest = JSON.parse(readFileSync(join(import.meta.dirname, "..", "module.json"), "utf8"));
+const LENT_BY_APP = LENT_BY_CORE[manifest.minCoreVersion] ?? [];
 
 const source = readFileSync(join(import.meta.dirname, "..", "src", "index.js"), "utf8");
 /** Every icon name the view asks for: `icon("…")` calls and the groups' table. */
 const asked = [...new Set([...source.matchAll(/icon\("([a-z0-9-]+)"/g), ...source.matchAll(/\["[a-zA-Z0-9]+", "([a-z0-9-]+)"\]/g)].map((match) => match[1]))];
 
 describe("the icons", () => {
-  it("asks the app only for icons it lends, and carries only the ones it does not", () => {
+  it("knows which icons the core of its minCoreVersion lends", () => {
+    expect(Object.keys(LENT_BY_CORE)).toContain(manifest.minCoreVersion);
+  });
+
+  it("asks the app only for icons its minimum core lends, and carries only the ones it does not", () => {
     for (const name of APP_ICONS) expect(LENT_BY_APP, name).toContain(name);
     for (const name of Object.keys(OWN_ICONS)) expect(LENT_BY_APP, name).not.toContain(name);
     expect(asked.length).toBeGreaterThan(20);

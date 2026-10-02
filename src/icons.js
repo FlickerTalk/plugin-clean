@@ -4,7 +4,7 @@
 // `node_modules/ionicons/dist/svg` (less the xmlns, which inline SVG does not need; a test checks
 // they match). One function, so that moving to `<ion-icon>` later is changing one place.
 
-/** The icons Clean asks the app for (all in the app's `ICONS` list). */
+/** The icons Clean asks the app for: all lent by core 1.3.0, its `minCoreVersion` (a test checks). */
 export const APP_ICONS = [
   "chatbubble-outline",
   "checkmark-outline",
