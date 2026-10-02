@@ -1,0 +1,21 @@
+{
+  "id": "com.flickertalk.clean",
+  "name": "Clean",
+  "version": "1.0.0",
+  "minCoreVersion": "1.1.0",
+  "components": [
+    "ft-clean"
+  ],
+  "permissions": {
+    "send": "propose"
+  },
+  "opens": [
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/heic",
+    "image/heif",
+    "application/pdf"
+  ],
+  "summary": "See and remove the location, phone model, author and other hidden data of a photo or PDF, on your phone, before sending it."
+}
