@@ -55,7 +55,7 @@ const STYLE = `
 :host([dark]) { color: #f4f4f4; --muted: #aaa; --line: rgba(255,255,255,.16); --card: rgba(255,255,255,.06); --accent: #3ccf9c; --warn: #f0b04c; }
 @media (prefers-color-scheme: dark) { :host { color: #f4f4f4; --muted: #aaa; --line: rgba(255,255,255,.16); --card: rgba(255,255,255,.06); --accent: #3ccf9c; --warn: #f0b04c; } }
 * { box-sizing: border-box; }
-.view { padding: 4px 8px 16px; }
+.view { padding: 4px 8px 16px; max-inline-size: 640px; margin-inline: auto; }
 .bar { display: flex; align-items: center; gap: 6px; min-height: 44px; }
 .grow { flex: 1; }
 button { appearance: none; border: 1px solid var(--line); background: transparent; color: inherit; min-width: 48px; height: 48px; border-radius: 12px; font: inherit; font-size: 22px; cursor: pointer; }
@@ -91,7 +91,7 @@ class Clean extends HTMLElement {
   constructor() {
     super();
     this.root = this.attachShadow({ mode: "open" });
-    this.lang = "en";
+    this.language = "en";
     this.state = "start";
     this.file = null; // {name, mime, bytes, kind}
     this.report = null;
@@ -110,7 +110,7 @@ class Clean extends HTMLElement {
   }
 
   onOpen(opening) {
-    this.lang = opening.lang || "en";
+    this.language = opening.lang || "en";
     if (opening.dark) this.setAttribute("dark", "");
     if (opening.file?.data) return this.read(opening.file);
     this.paint();
@@ -179,7 +179,7 @@ class Clean extends HTMLElement {
   async save() {
     const { name, mime, bytes } = this.result;
     const saved = await globalThis.ft.save(name, mime, toBase64(bytes));
-    this.note = saved ? t(this.lang, "saved") : t(this.lang, "notSaved");
+    this.note = saved ? t(this.language, "saved") : t(this.language, "notSaved");
     this.paint();
   }
 
@@ -199,8 +199,8 @@ class Clean extends HTMLElement {
   // ---- Painting ----
 
   paint() {
-    const T = (key, fill) => escape(t(this.lang, key, fill));
-    this.view.setAttribute("dir", directionOf(this.lang));
+    const T = (key, fill) => escape(t(this.language, key, fill));
+    this.view.setAttribute("dir", directionOf(this.language));
     const bar = `<div class="bar"><span class="grow"></span><button class="plain" data-act="close" aria-label="${T("close")}">${icon("close-outline")}</button></div>`;
     const another = `<button data-act="another" aria-label="${T("another")}">${icon("refresh-outline")}</button>`;
     let body = "";
@@ -267,9 +267,9 @@ class Clean extends HTMLElement {
     for (const [group, name] of GROUPS) {
       const mine = findings.filter((found) => found.group === group);
       if (!mine.length) continue;
-      const values = mine.map((found) => (found.empty ? t(this.lang, "locationEmpty") : shown(found, this.lang))).filter(Boolean);
+      const values = mine.map((found) => (found.empty ? t(this.language, "locationEmpty") : shown(found, this.language))).filter(Boolean);
       const value = values.length ? `<span class="value">${escape(values.join(" · "))}</span>` : "";
-      rows.push(`<li data-group="${group}">${icon(name)}<span><span class="what">${escape(t(this.lang, group))}</span> ${value}</span></li>`);
+      rows.push(`<li data-group="${group}">${icon(name)}<span><span class="what">${escape(t(this.language, group))}</span> ${value}</span></li>`);
     }
     return `<ul data-section="${section}">${rows.join("")}</ul>`;
   }

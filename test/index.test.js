@@ -342,3 +342,23 @@ describe("icons, not emoji (brief of the icons, 2026-10-02)", () => {
     }
   });
 });
+
+describe("as a custom element", () => {
+  // A real browser throws NotSupportedError when a constructor leaves attributes or children, and
+  // `lang` is an attribute HTMLElement reflects: the language lives in a property of its own.
+  it("comes out of document.createElement with no attribute and no child", () => {
+    globalThis.ft = fakeCore().ft;
+    const made = document.createElement("ft-clean");
+    expect(made.attributes.length).toBe(0);
+    expect(made.childNodes.length).toBe(0);
+    expect(made.getAttribute("lang")).toBe(null);
+  });
+
+  it("keeps its content to a comfortable width on a wide screen", async () => {
+    mount();
+    await core.open({});
+    await settle();
+    const style = inside().querySelector("style").textContent;
+    expect(style).toMatch(/\.view\s*\{[^}]*max-inline-size:\s*640px[^}]*margin-inline:\s*auto/);
+  });
+});
