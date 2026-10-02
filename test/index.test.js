@@ -292,3 +292,73 @@ describe("what it touches", () => {
     expect(setItem).not.toHaveBeenCalled();
   });
 });
+
+describe("icons, not emoji (brief of the icons, 2026-10-02)", () => {
+  const PICTOGRAPH = /\p{Extended_Pictographic}/u;
+  const seen = [];
+  const look = (where) => seen.push([where, inside().innerHTML]);
+
+  it("paints no emoji on any screen, and every lone icon button keeps its label", async () => {
+    mount({ picked: null });
+    await core.open({ lang: "es" });
+    await settle();
+    look("start");
+    for (const [name, mime] of [
+      ["photo.jpg", "image/jpeg"],
+      ["photo.heic", "image/heic"],
+      ["signed.pdf", "application/pdf"],
+      ["document.pdf", "application/pdf"],
+    ]) {
+      mount();
+      await core.open({ file: file(name, mime) });
+      await settle();
+      look(`report ${name}`);
+      button("clean").click();
+      await settle();
+      look(`done ${name}`);
+      button("save").click();
+      await settle();
+      look(`saved ${name}`);
+      for (const act of ["send", "save", "another", "close"]) expect(button(act).getAttribute("aria-label"), act).toBeTruthy();
+    }
+    for (const [name, mime] of [["locked.pdf", "application/pdf"], ["broken.jpg", "image/jpeg"], ["broken.pdf", "application/pdf"]]) {
+      mount();
+      await core.open({ file: file(name, mime) });
+      await settle();
+      look(`error ${name}`);
+    }
+    mount({ picked: null });
+    await core.open({});
+    await settle();
+    for (const act of ["photo", "pdf", "close"]) expect(button(act).getAttribute("aria-label"), act).toBeTruthy();
+    for (const [where, html] of seen) expect(html.match(PICTOGRAPH)?.[0] ?? null, where).toBe(null);
+    expect(seen.length).toBe(16);
+  });
+
+  it("has no emoji in any of the 21 languages", async () => {
+    const { LANGUAGES, catalogueOf } = await import("../src/i18n.js");
+    for (const lang of LANGUAGES) {
+      for (const [key, text] of Object.entries(catalogueOf(lang))) expect(PICTOGRAPH.test(text), `${lang}.${key}`).toBe(false);
+    }
+  });
+});
+
+describe("as a custom element", () => {
+  // A real browser throws NotSupportedError when a constructor leaves attributes or children, and
+  // `lang` is an attribute HTMLElement reflects: the language lives in a property of its own.
+  it("comes out of document.createElement with no attribute and no child", () => {
+    globalThis.ft = fakeCore().ft;
+    const made = document.createElement("ft-clean");
+    expect(made.attributes.length).toBe(0);
+    expect(made.childNodes.length).toBe(0);
+    expect(made.getAttribute("lang")).toBe(null);
+  });
+
+  it("keeps its content to a comfortable width on a wide screen", async () => {
+    mount();
+    await core.open({});
+    await settle();
+    const style = inside().querySelector("style").textContent;
+    expect(style).toMatch(/\.view\s*\{[^}]*max-inline-size:\s*640px[^}]*margin-inline:\s*auto/);
+  });
+});

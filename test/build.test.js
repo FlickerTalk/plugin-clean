@@ -51,7 +51,7 @@ describe("the package", () => {
 
   it("carries the licence of every component inside", () => {
     const notices = readFileSync(join(dist, "THIRD_PARTY_NOTICES.md"), "utf8");
-    for (const component of ["picscrub", "exifr", "pdf-lib", "@pdf-lib/standard-fonts", "@pdf-lib/upng", "pako", "tslib"]) {
+    for (const component of ["picscrub", "exifr", "pdf-lib", "ionicons", "@pdf-lib/standard-fonts", "@pdf-lib/upng", "pako", "tslib"]) {
       expect(notices, component).toContain(`## ${component}`);
     }
     expect(notices).toContain("Permission is hereby granted, free of charge");

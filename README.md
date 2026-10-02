@@ -20,20 +20,22 @@ before you send it, and send a copy without it.
 
 ## What it does
 
-From a conversation: 🧰 → **Clean** → 🖼️ (photo picker) or 📄 (document picker); or, on a file
-received in the chat, "Open with" → **Clean**. The report lists what the file says, by group, in the
-phone's language:
+From a conversation: the tools button → **Clean** → photo (the photo picker) or PDF (the document
+picker); or, on a file received in the chat, "Open with" → **Clean**. The report lists what the
+file says, by group, each with its Ionicon, in the phone's language: location (coordinates, or
+"empty" when Android's photo picker already zeroed them), phone or camera, dates, author and
+copyright, program, serial numbers and unique IDs, titles, descriptions and comments, thumbnails
+and other pictures inside the file (a preview, an HDR gain map, a depth map), the video of a motion
+photo, other data after the picture, Content Credentials (C2PA), the PDF's file identifier, authors
+of PDF comments, attachments, and anything else.
 
-📍 location (coordinates, or "empty" when Android's photo picker already zeroed them) · 📱 phone or
-camera · 🕒 dates · 👤 author and copyright · 🛠️ program · 🔢 serial numbers and unique IDs ·
-📝 titles, descriptions and comments · 🖼️ thumbnails and other pictures inside the file (a preview,
-an HDR gain map, a depth map) · 🎞️ the video of a motion photo · ➕ other
-data after the picture · 🏷️ Content Credentials (C2PA) · 🆔 the PDF's file identifier · 💬 authors
-of PDF comments · 📎 attachments · ℹ️ anything else.
-
-✨ **Clean** makes the copy, then shows ✅ *Removed*, ⚠️ *Could not be removed* and 📌 *Kept on
-purpose*. 📤 puts the clean file in the message box (the plugin closes, the user sends it); 💾 saves
+**Clean** makes the copy, then shows *Removed*, *Could not be removed* and *Kept on purpose*.
+*Send* puts the clean file in the message box (the plugin closes, the user sends it); *Save* saves
 it on the phone.
+
+All icons are Ionicons, as in the app: the ones the app lends (`./icon/<name>.svg`) and the rest
+from the `ionicons` package (8.1.0, MIT), carried as inline SVG in `src/icons.js`. Every icon is
+drawn by one function, `icon()`.
 
 ### Photos: JPEG, PNG, WebP, HEIC/HEIF
 
@@ -65,7 +67,7 @@ longer uses, so an older revision's Info does not stay behind. pdf-lib opens the
 
 Not touched, and the report says so: the authors of comments (`/T`), attachments, the text and
 pictures of the pages, and the metadata inside those pictures. A PDF with a password cannot be read,
-so it cannot be cleaned (🔒). A PDF with a **digital signature** can be cleaned, after a warning:
+so it cannot be cleaned. A PDF with a **digital signature** can be cleaned, after a warning:
 the signature stops being valid, because the file changes. A PDF keeps its own name (without any
 folder).
 

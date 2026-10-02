@@ -149,7 +149,7 @@ export async function inspectPdf(bytes) {
       findings.add("annotations", decoded(annotation.get(name("T"))));
       if (annotation.get(name("Subtype")) === name("FileAttachment")) {
         const spec = context.lookup(annotation.get(name("FS")));
-        findings.add("attachments", (spec instanceof PDFDict && decoded(context.lookup(spec.get(name("F"))))) || "📎");
+        findings.add("attachments", (spec instanceof PDFDict && decoded(context.lookup(spec.get(name("F"))))) || null);
       }
     }
   }
