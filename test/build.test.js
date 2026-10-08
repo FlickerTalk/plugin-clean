@@ -2,7 +2,7 @@
 // What the catalogue signs (`module.json` + `dist/`), checked as it is: under the size the plan
 // gives (1 MB), with the licences of what is inside, with no address it could reach and none of
 // the APIs the frame forbids, and working: the bundle itself cleans a photo.
-import { readFileSync, readdirSync, statSync } from "node:fs";
+import { readFileSync, readdirSync, statSync, existsSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
 import { readExif } from "../src/exif.js";
@@ -116,5 +116,20 @@ describe("the bundle", () => {
     const read = await readExif(new Uint8Array(Buffer.from(sent, "base64")));
     expect(read.gps ?? null).toBe(null);
     expect(read.ifd0.Orientation).toBe(6);
+  });
+});
+
+describe("the image of the Apps grid", () => {
+  // icon.svg beside module.json and dist/, signed with the rest: the app draws it on the tile; the
+  // Ionicon in module.json stays as the fallback (2026-10-08).
+  const image = join(import.meta.dirname, "..", "icon.svg");
+
+  it("is a square 64 × 64 SVG of at most 4 KB at the root of the package, and not inside dist/", () => {
+    expect(existsSync(image), "icon.svg").toBe(true);
+    expect(statSync(image).size).toBeLessThanOrEqual(4096);
+    const svg = readFileSync(image, "utf8");
+    expect(svg.startsWith("<svg")).toBe(true);
+    expect(svg).toContain('viewBox="0 0 64 64"');
+    expect(existsSync(join(import.meta.dirname, "..", "dist", "icon.svg"))).toBe(false);
   });
 });

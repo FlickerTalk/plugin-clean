@@ -20,7 +20,7 @@ describe("module.json", () => {
   });
 
   it("follows the SDK's schema: the fields it knows, their shapes, an English summary", () => {
-    const known = ["id", "name", "version", "minCoreVersion", "components", "summary", "views", "opens", "permissions", "locales"];
+    const known = ["id", "name", "version", "minCoreVersion", "components", "summary", "views", "opens", "permissions", "locales", "icon"];
     expect(Object.keys(manifest).every((key) => known.includes(key))).toBe(true);
     expect(manifest.id).toMatch(/^[a-z0-9]+(\.[a-z0-9]+)+$/);
     expect(manifest.version).toMatch(/^\d+\.\d+\.\d+$/);
@@ -31,6 +31,8 @@ describe("module.json", () => {
     expect(manifest.summary.length).toBeLessThanOrEqual(200);
     expect(manifest.summary).toMatch(/^[\x20-\x7e]+$/);
     expect(manifest.summary.toLowerCase()).not.toMatch(/anonym/);
+    // The Apps grid shows this Ionicon for the tool (2026-10-08).
+    expect(manifest.icon).toMatch(/^[a-z0-9-]+$/);
   });
 
   it("names and sums up Clean in each of the app's languages, within the schema's limits", () => {
