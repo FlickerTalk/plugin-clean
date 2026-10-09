@@ -50,47 +50,43 @@ export function toBase64(bytes) {
 const escape = (text) =>
   String(text).replace(/[&<>"']/g, (one) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[one]);
 
+// Ionic draws the buttons and the scrolling page (the app lends it to the frame, app 1.6.0); this is
+// only what is Clean's own: the report, the preview, the warning. The colours follow the app.
 const STYLE = `
-:host { display: block; font: 15px/1.4 system-ui, sans-serif; color: #111; --muted: #666; --line: rgba(0,0,0,.12); --card: rgba(0,0,0,.04); --accent: #0a7d5a; --warn: #9a5b00; }
-:host([dark]) { color: #f4f4f4; --muted: #aaa; --line: rgba(255,255,255,.16); --card: rgba(255,255,255,.06); --accent: #3ccf9c; --warn: #f0b04c; }
-@media (prefers-color-scheme: dark) { :host { color: #f4f4f4; --muted: #aaa; --line: rgba(255,255,255,.16); --card: rgba(255,255,255,.06); --accent: #3ccf9c; --warn: #f0b04c; } }
-* { box-sizing: border-box; }
-.view { padding: 4px 8px 16px; max-inline-size: 640px; margin-inline: auto; }
-.bar { display: flex; align-items: center; gap: 6px; min-height: 44px; }
-.grow { flex: 1; }
-button { appearance: none; border: 1px solid var(--line); background: transparent; color: inherit; min-width: 48px; height: 48px; border-radius: 12px; font: inherit; font-size: 22px; cursor: pointer; }
-button.plain { border: 0; }
-button.primary { background: var(--accent); color: #fff; border: 0; font-size: 17px; padding: 0 20px; }
-.i { display: block; flex: none; width: 22px; height: 22px; margin: auto; }
-i.i { background: currentColor; -webkit-mask: var(--i) center/contain no-repeat; mask: var(--i) center/contain no-repeat; }
-svg.i { fill: currentColor; }
-.pick .i { width: 44px; height: 44px; }
-button.primary { display: inline-flex; align-items: center; gap: 8px; }
-button.primary .i { margin: 0; }
-h2, .withicon { display: flex; align-items: center; gap: 8px; }
-h2 .i, .withicon .i { margin: 0; width: 20px; height: 20px; }
-.alert .i { width: 44px; height: 44px; }
-.pick { display: flex; gap: 16px; justify-content: center; margin: 24px 0; }
-.pick button { width: 96px; height: 96px; }
-.intro, .note, .same { color: var(--muted); text-align: center; }
-.same, .note { font-size: 13px; }
-.preview { display: block; max-width: 100%; max-height: 40vh; margin: 8px auto; border-radius: 10px; }
-h2 { font-size: 15px; margin: 16px 0 6px; }
-ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
-li { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; background: var(--card); }
-li .i { margin: 0; align-self: center; width: 20px; height: 20px; }
-li .what { font-weight: 600; }
-li .value { color: var(--muted); overflow-wrap: anywhere; }
-.warning { color: var(--warn); border: 1px solid currentColor; border-radius: 10px; padding: 8px 10px; margin: 10px 0; }
-.alert { text-align: center; margin: 32px 8px; }
-.actions { display: flex; gap: 12px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+ft-clean { display: flex; flex-direction: column; height: 100%; font: 15px/1.4 system-ui, sans-serif; color: var(--ion-text-color, #111); --muted: var(--ion-color-medium, #666); --line: rgba(0,0,0,.12); --card: rgba(0,0,0,.04); --warn: #9a5b00; }
+ft-clean[dark] { color: var(--ion-text-color, #f4f4f4); --muted: var(--ion-color-medium, #aaa); --line: rgba(255,255,255,.16); --card: rgba(255,255,255,.06); --warn: #f0b04c; }
+@media (prefers-color-scheme: dark) { ft-clean { color: var(--ion-text-color, #f4f4f4); --muted: var(--ion-color-medium, #aaa); --line: rgba(255,255,255,.16); --card: rgba(255,255,255,.06); --warn: #f0b04c; } }
+ft-clean * { box-sizing: border-box; }
+ft-clean ion-content { flex: 1; }
+ft-clean .view { padding: 4px 8px 16px; max-inline-size: 640px; margin-inline: auto; }
+ft-clean .i { display: block; flex: none; width: 22px; height: 22px; margin: auto; }
+ft-clean i.i { background: currentColor; -webkit-mask: var(--i) center/contain no-repeat; mask: var(--i) center/contain no-repeat; }
+ft-clean svg.i { fill: currentColor; }
+ft-clean .pick .i { width: 44px; height: 44px; }
+ft-clean ion-button .i { margin: 0; }
+ft-clean h2, ft-clean .withicon { display: flex; align-items: center; gap: 8px; }
+ft-clean h2 .i, ft-clean .withicon .i { margin: 0; width: 20px; height: 20px; }
+ft-clean .alert .i { width: 44px; height: 44px; }
+ft-clean .pick { display: flex; gap: 16px; justify-content: center; margin: 24px 0; }
+ft-clean .pick ion-button { width: 96px; height: 96px; --border-radius: 12px; }
+ft-clean .intro, ft-clean .note, ft-clean .same { color: var(--muted); text-align: center; }
+ft-clean .same, ft-clean .note { font-size: 13px; }
+ft-clean .preview { display: block; max-width: 100%; max-height: 40vh; margin: 8px auto; border-radius: 10px; }
+ft-clean h2 { font-size: 15px; margin: 16px 0 6px; }
+ft-clean ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+ft-clean li { display: flex; gap: 10px; align-items: baseline; padding: 8px 10px; border-radius: 10px; background: var(--card); }
+ft-clean li .i { margin: 0; align-self: center; width: 20px; height: 20px; }
+ft-clean li .what { font-weight: 600; }
+ft-clean li .value { color: var(--muted); overflow-wrap: anywhere; }
+ft-clean .warning { color: var(--warn); border: 1px solid currentColor; border-radius: 10px; padding: 8px 10px; margin: 10px 0; }
+ft-clean .alert { text-align: center; margin: 32px 8px; }
+ft-clean .actions { display: flex; gap: 12px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
 `;
 
 /** The plugin: start, reading, report, cleaning, done, or why it cannot. */
 class Clean extends HTMLElement {
   constructor() {
     super();
-    this.root = this.attachShadow({ mode: "open" });
     this.language = "en";
     this.state = "start";
     this.file = null; // {name, mime, bytes, kind}
@@ -102,9 +98,11 @@ class Clean extends HTMLElement {
   }
 
   connectedCallback() {
-    this.root.innerHTML = `<style>${STYLE}</style><div class="view"></div>`;
-    this.view = this.root.querySelector(".view");
-    this.root.addEventListener("click", (event) => this.onClick(event));
+    // In the page, not in a shadow root: the frame holds only this tool, and Ionic's global
+    // styles (colours, typography) do not cross a shadow boundary.
+    this.innerHTML = `<style>${STYLE}</style><ion-content><div class="view"></div></ion-content>`;
+    this.view = this.querySelector(".view");
+    this.addEventListener("click", (event) => this.onClick(event));
     globalThis.ft?.onOpen?.((opening) => this.onOpen(opening));
     this.paint();
   }
@@ -117,11 +115,10 @@ class Clean extends HTMLElement {
   }
 
   onClick(event) {
-    const button = event.target.closest("button");
+    const button = event.target.closest("button, ion-button");
     if (!button) return;
     const act = button.dataset.act;
-    if (act === "close") globalThis.ft.close();
-    else if (act === "photo") this.pick("image/*");
+    if (act === "photo") this.pick("image/*");
     else if (act === "pdf") this.pick("application/pdf");
     else if (act === "clean") this.clean();
     else if (act === "send") this.send();
@@ -201,14 +198,14 @@ class Clean extends HTMLElement {
   paint() {
     const T = (key, fill) => escape(t(this.language, key, fill));
     this.view.setAttribute("dir", directionOf(this.language));
-    const bar = `<div class="bar"><span class="grow"></span><button class="plain" data-act="close" aria-label="${T("close")}">${icon("close-outline")}</button></div>`;
-    const another = `<button data-act="another" aria-label="${T("another")}">${icon("refresh-outline")}</button>`;
+    // No bar of its own: the name and the way out are the app's tool window.
+    const another = `<ion-button fill="outline" data-act="another" aria-label="${T("another")}">${icon("refresh-outline", { slot: "icon-only" })}</ion-button>`;
     let body = "";
     if (this.state === "start") {
       body = `<p class="intro">${T("intro")}</p>
         <div class="pick">
-          <button data-act="photo" aria-label="${T("pickPhoto")}">${icon("image-outline")}</button>
-          <button data-act="pdf" aria-label="${T("pickPdf")}">${icon("document-text-outline")}</button>
+          <ion-button fill="outline" data-act="photo" aria-label="${T("pickPhoto")}">${icon("image-outline", { slot: "icon-only" })}</ion-button>
+          <ion-button fill="outline" data-act="pdf" aria-label="${T("pickPdf")}">${icon("document-text-outline", { slot: "icon-only" })}</ion-button>
         </div>`;
     } else if (this.state === "reading" || this.state === "cleaning") {
       body = `<p class="intro" role="status">${T(this.state)}</p>`;
@@ -221,7 +218,7 @@ class Clean extends HTMLElement {
     } else if (this.state === "done") {
       body = this.paintDone(T, another);
     }
-    this.view.innerHTML = bar + body;
+    this.view.innerHTML = body;
   }
 
   paintReport(T) {
@@ -236,7 +233,7 @@ class Clean extends HTMLElement {
       : `<p class="intro withicon">${icon("checkmark-outline")}<span>${T("nothing")}</span></p>`;
     const signed = this.report.signed ? `<p class="warning withicon" data-warning="signed">${icon("shield-checkmark-outline")}<span>${T("signed")}</span></p>` : "";
     return `${preview}${signed}${found}
-      <div class="actions"><button class="primary" data-act="clean">${icon("sparkles-outline")}<span>${T("clean")}</span></button></div>`;
+      <div class="actions"><ion-button data-act="clean">${icon("sparkles-outline", { slot: "start" })}<span>${T("clean")}</span></ion-button></div>`;
   }
 
   paintDone(T, another) {
@@ -253,8 +250,8 @@ class Clean extends HTMLElement {
     html += `<p class="same">${T(kind === "pdf" ? "pdfSame" : "pictureSame")}</p>`;
     html += `<p class="same">${T("newName", { name })}</p>`;
     html += `<div class="actions">
-        <button data-act="send" aria-label="${T("send")}">${icon("send-outline")}</button>
-        <button data-act="save" aria-label="${T("save")}">${icon("save-outline")}</button>
+        <ion-button fill="outline" data-act="send" aria-label="${T("send")}">${icon("send-outline", { slot: "icon-only" })}</ion-button>
+        <ion-button fill="outline" data-act="save" aria-label="${T("save")}">${icon("save-outline", { slot: "icon-only" })}</ion-button>
         ${another}
       </div>`;
     if (this.note) html += `<p class="note" role="status">${escape(this.note)}</p>`;
