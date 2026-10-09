@@ -81,13 +81,15 @@ Out of scope: Word, Excel and PowerPoint files, video, audio, several files at o
 | `ft.pickFile` | `image/*` (the photo picker) or `application/pdf` |
 | `ft.send` | the clean file, proposed in the message box (`send: propose`) |
 | `ft.save` | the clean file, on the phone |
-| `ft.close` | ✕ |
 
 `module.json`: `permissions: { "send": "propose" }`; `opens`: `image/jpeg`, `image/png`,
 `image/webp`, `image/heic`, `image/heif`, `application/pdf`; no `views` (a tap on a photo or PDF
-still opens the usual viewer). Needs FlickerTalk core **1.3.0** (`minCoreVersion`): it is the core
-it was tested on, the first that lends the `location-outline` icon and passes the app's dark mode in
-`onOpen`. The contract is in [plugin-sdk](https://github.com/FlickerTalk/plugin-sdk).
+still opens the usual viewer). Needs FlickerTalk core **1.6.0** (`minCoreVersion`): the first that
+lends Ionic to the plugin frame. Since 1.0.3 Clean's screens sit in Ionic's `ion-content` and its
+buttons are `ion-button`s, so it looks like the rest of FlickerTalk; the package carries no Ionic
+(`@ionic/core` is only a devDependency, so the tests draw what the phone draws). The app's tool
+window has the way out, so Clean has no close button of its own. The contract is in
+[plugin-sdk](https://github.com/FlickerTalk/plugin-sdk).
 
 ## Inside
 
