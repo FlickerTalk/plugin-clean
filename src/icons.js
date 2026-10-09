@@ -4,11 +4,11 @@
 // `node_modules/ionicons/dist/svg` (less the xmlns, which inline SVG does not need; a test checks
 // they match). One function, so that moving to `<ion-icon>` later is changing one place.
 
-/** The icons Clean asks the app for: all lent by core 1.3.0, its `minCoreVersion` (a test checks). */
+/** The icons Clean asks the app for: all lent by core 1.6.0, its `minCoreVersion` (a test checks). */
 export const APP_ICONS = [
+  "camera-outline",
   "chatbubble-outline",
   "checkmark-outline",
-  "close-outline",
   "color-palette-outline",
   "document-text-outline",
   "ellipsis-horizontal-outline",
@@ -28,8 +28,6 @@ export const OWN_ICONS = {
     "<svg viewBox=\"0 0 512 512\" class=\"ionicon\"><path d=\"M216.08 192v143.85a40.08 40.08 0 0 0 80.15 0l.13-188.55a67.94 67.94 0 1 0-135.87 0v189.82a95.51 95.51 0 1 0 191 0V159.74\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-miterlimit=\"10\" stroke-width=\"32px\"/></svg>",
   "barcode-outline":
     "<svg viewBox=\"0 0 512 512\" class=\"ionicon\"><path d=\"m384 400.33 35.13-.33A29 29 0 0 0 448 371.13V140.87A29 29 0 0 0 419.13 112l-35.13.33M128 112l-36.8.33c-15.88 0-27.2 13-27.2 28.87v230.27c0 15.87 11.32 28.86 27.2 28.86L128 400M384 192v128M320 160v192M256 176v160M192 160v192M128 192v128\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32px\"/></svg>",
-  "camera-outline":
-    "<svg viewBox=\"0 0 512 512\" class=\"ionicon\"><path d=\"m350.54 148.68-26.62-42.06C318.31 100.08 310.62 96 302 96h-92c-8.62 0-16.31 4.08-21.92 10.62l-26.62 42.06C155.85 155.23 148.62 160 140 160H80a32 32 0 0 0-32 32v192a32 32 0 0 0 32 32h352a32 32 0 0 0 32-32V192a32 32 0 0 0-32-32h-59c-8.65 0-16.85-4.77-22.46-11.32\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32px\"/><circle cx=\"256\" cy=\"272\" r=\"80\" fill=\"none\" stroke=\"currentColor\" stroke-miterlimit=\"10\" stroke-width=\"32px\"/><path d=\"M124 158v-22h-24v22\" fill=\"none\" stroke=\"currentColor\" stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"32px\"/></svg>",
   "compass-outline":
     "<svg viewBox=\"0 0 512 512\" class=\"ionicon\"><path d=\"M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192 192-86 192-192Z\" fill=\"none\" stroke=\"currentColor\" stroke-miterlimit=\"10\" stroke-width=\"32px\"/><path d=\"m350.67 150.93-117.2 46.88a64 64 0 0 0-35.66 35.66l-46.88 117.2a8 8 0 0 0 10.4 10.4l117.2-46.88a64 64 0 0 0 35.66-35.66l46.88-117.2a8 8 0 0 0-10.4-10.4M256 280a24 24 0 1 1 24-24 24 24 0 0 1-24 24\"/></svg>",
   "construct-outline":
@@ -69,8 +67,8 @@ const escape = (text) =>
  * An icon as markup. Beside a text it is hidden from screen readers; alone, `label` names it.
  * Throws for a name that is neither lent by the app nor carried here.
  */
-export function icon(name, { label } = {}) {
-  const named = label ? `role="img" aria-label="${escape(label)}"` : 'aria-hidden="true"';
+export function icon(name, { label, slot } = {}) {
+  const named = (label ? `role="img" aria-label="${escape(label)}"` : 'aria-hidden="true"') + (slot ? ` slot="${slot}"` : "");
   if (APP_ICONS.includes(name)) return `<i class="i" style="--i:url(./icon/${name}.svg)" ${named}></i>`;
   const svg = OWN_ICONS[name];
   if (!svg) throw new Error(`no icon ${name}`);

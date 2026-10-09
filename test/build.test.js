@@ -59,6 +59,13 @@ describe("the package", () => {
     expect(notices).toEqual(readFileSync(join(root, "THIRD_PARTY_NOTICES.md"), "utf8"));
   });
 
+  // Ionic is the app's, lent to the frame: a copy in the package would be a second one, and heavy.
+  it("carries no Ionic of its own", () => {
+    const code = readFileSync(join(dist, "index.js"), "utf8");
+    expect(code).not.toMatch(/@ionic\/core|ionicframework|stencil|defineCustomElement|__registerHost/i);
+    expect(code).not.toMatch(/^\s*import\s.*from\s+["'](?!\.\/)/m);
+  });
+
   it("has no https:// address, and no http:// one but XML namespaces", () => {
     for (const path of files(dist)) {
       if (path.endsWith(".md")) continue; // the notices name the projects' homes; nothing loads them
@@ -108,9 +115,9 @@ describe("the bundle", () => {
       for (let at = 0; at < 40; at += 1) await new Promise((resolve) => setTimeout(resolve, 0));
     };
     await settle();
-    element.shadowRoot.querySelector('[data-act="clean"]').click();
+    element.querySelector('[data-act="clean"]').click();
     await settle();
-    element.shadowRoot.querySelector('[data-act="send"]').click();
+    element.querySelector('[data-act="send"]').click();
     const [name, , sent] = send.mock.calls[0];
     expect(name).toBe("photo.jpg");
     const read = await readExif(new Uint8Array(Buffer.from(sent, "base64")));

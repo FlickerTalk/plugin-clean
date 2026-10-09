@@ -21,6 +21,18 @@ const LENT_BY_CORE = {
     "resize-outline", "save-outline", "search-outline", "send-outline", "square-outline", "text-outline", "time-outline",
     "trash-outline",
   ],
+  // Core 1.6.0 (2026-10-09, it lends Ionic to the frame): app origin/main at 4bea4b0, the same icons
+  // and `camera-outline`.
+  "1.6.0": [
+    "add-outline", "alarm-outline", "arrow-back-outline", "arrow-redo-outline", "arrow-undo-outline", "arrow-up-outline",
+    "brush-outline", "calculator-outline", "camera-outline", "chatbubble-outline", "checkmark-outline", "close-outline",
+    "cloud-done-outline", "cloud-outline", "cloud-upload-outline", "color-palette-outline", "crop-outline",
+    "document-text-outline", "download-outline", "ellipsis-horizontal-outline", "expand-outline", "eye-outline",
+    "folder-open-outline", "folder-outline", "grid-outline", "hand-left-outline", "image-outline", "key-outline",
+    "link-outline", "location-outline", "lock-closed-outline", "move-outline", "options-outline", "pause-outline",
+    "pencil-outline", "play-outline", "refresh-outline", "remove-outline", "resize-outline", "save-outline",
+    "search-outline", "send-outline", "square-outline", "text-outline", "time-outline", "trash-outline",
+  ],
 };
 const manifest = JSON.parse(readFileSync(join(import.meta.dirname, "..", "module.json"), "utf8"));
 const LENT_BY_APP = LENT_BY_CORE[manifest.minCoreVersion] ?? [];
