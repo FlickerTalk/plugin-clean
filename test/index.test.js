@@ -8,6 +8,7 @@ import { join } from "node:path";
 import { PDFDocument } from "pdf-lib";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { readExif } from "../src/exif.js";
+import "./ionic.setup.js";
 import "../src/index.js";
 
 const fixture = (name) => readFileSync(join(import.meta.dirname, "fixtures", name));
@@ -44,7 +45,10 @@ function fakeCore({ picked = null, saved = true } = {}) {
 
 let core;
 let element;
-const inside = () => element.shadowRoot;
+// In the page, not in a shadow root: Ionic's global styles do not cross a shadow boundary.
+const inside = () => element;
+// Ionic moves a button's label to the native button inside it once it has drawn.
+const label = (one) => one?.getAttribute("aria-label") ?? one?.shadowRoot?.querySelector("button")?.getAttribute("aria-label") ?? null;
 const button = (act) => inside().querySelector(`[data-act="${act}"]`);
 const row = (section, group) => inside().querySelector(`[data-section="${section}"] [data-group="${group}"]`);
 const text = () => inside().textContent;
@@ -63,11 +67,10 @@ describe("opened from the chat without a file", () => {
   it("offers a photo or a PDF, in the phone's language", async () => {
     await core.open({ lang: "es" });
     await settle();
-    expect(button("photo").getAttribute("aria-label")).toBe("Elegir una foto");
-    expect(button("pdf").getAttribute("aria-label")).toBe("Elegir un PDF");
-    expect(button("close").getAttribute("aria-label")).toBe("Cerrar");
-    button("close").click();
-    expect(core.ft.close).toHaveBeenCalled();
+    expect(label(button("photo"))).toBe("Elegir una foto");
+    expect(label(button("pdf"))).toBe("Elegir un PDF");
+    // The app's tool window has the way out.
+    expect(button("close")).toBe(null);
   });
 
   it("asks the photo picker for a photo, and the document picker for a PDF", async () => {
@@ -319,7 +322,7 @@ describe("icons, not emoji (brief of the icons, 2026-10-02)", () => {
       button("save").click();
       await settle();
       look(`saved ${name}`);
-      for (const act of ["send", "save", "another", "close"]) expect(button(act).getAttribute("aria-label"), act).toBeTruthy();
+      for (const act of ["send", "save", "another"]) expect(label(button(act)), act).toBeTruthy();
     }
     for (const [name, mime] of [["locked.pdf", "application/pdf"], ["broken.jpg", "image/jpeg"], ["broken.pdf", "application/pdf"]]) {
       mount();
@@ -330,7 +333,7 @@ describe("icons, not emoji (brief of the icons, 2026-10-02)", () => {
     mount({ picked: null });
     await core.open({});
     await settle();
-    for (const act of ["photo", "pdf", "close"]) expect(button(act).getAttribute("aria-label"), act).toBeTruthy();
+    for (const act of ["photo", "pdf"]) expect(label(button(act)), act).toBeTruthy();
     for (const [where, html] of seen) expect(html.match(PICTOGRAPH)?.[0] ?? null, where).toBe(null);
     expect(seen.length).toBe(16);
   });
@@ -339,6 +342,37 @@ describe("icons, not emoji (brief of the icons, 2026-10-02)", () => {
     const { LANGUAGES, catalogueOf } = await import("../src/i18n.js");
     for (const lang of LANGUAGES) {
       for (const [key, text] of Object.entries(catalogueOf(lang))) expect(PICTOGRAPH.test(text), `${lang}.${key}`).toBe(false);
+    }
+  });
+});
+
+describe("with the Ionic the app lends", () => {
+  it("draws in the page, its screens in Ionic's content, every action an Ionic button", async () => {
+    mount();
+    await core.open({ file: file("photo.jpg", "image/jpeg") });
+    await settle();
+    expect(element.shadowRoot).toBe(null);
+    expect(element.querySelector(":scope > ion-content .view")).toBeTruthy();
+    // Nothing of its own in a bar: the name and the way out are the window's.
+    expect(element.querySelector("ion-header")).toBe(null);
+    expect(button("clean").tagName).toBe("ION-BUTTON");
+    expect(button("clean").textContent).toContain("Clean");
+    button("clean").click();
+    await settle();
+    for (const act of ["send", "save", "another"]) {
+      expect(button(act).tagName, act).toBe("ION-BUTTON");
+      expect(button(act).querySelector('[slot="icon-only"]'), act).toBeTruthy();
+    }
+    expect(element.querySelector("button")).toBe(null);
+  });
+
+  it("offers a photo or a PDF with two large Ionic buttons", async () => {
+    mount();
+    await core.open({});
+    await settle();
+    for (const act of ["photo", "pdf"]) {
+      expect(button(act).tagName, act).toBe("ION-BUTTON");
+      expect(button(act).getAttribute("fill"), act).toBe("outline");
     }
   });
 });
