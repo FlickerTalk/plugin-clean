@@ -64,6 +64,8 @@ ft-clean i.i { background: currentColor; -webkit-mask: var(--i) center/contain n
 ft-clean svg.i { fill: currentColor; }
 ft-clean .pick .i { width: 44px; height: 44px; }
 ft-clean ion-button .i { margin: 0; }
+ft-clean ion-button .i[slot="start"] { margin-inline-end: 6px; }
+ft-clean ion-button .i[slot="end"] { margin-inline-start: 6px; }
 ft-clean h2, ft-clean .withicon { display: flex; align-items: center; gap: 8px; }
 ft-clean h2 .i, ft-clean .withicon .i { margin: 0; width: 20px; height: 20px; }
 ft-clean .alert .i { width: 44px; height: 44px; }
