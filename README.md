@@ -109,6 +109,18 @@ code at all. A test fails if `dist/` contains an `https://` address, an `http://
 XML namespace name, or any of `fetch`, `XMLHttpRequest`, `WebSocket`, workers, WebAssembly, `eval`,
 `localStorage`, `indexedDB` or a dialog.
 
+A namespace name identifies a vocabulary inside a file's XMP; the code compares it as text and never
+requests it. The ones the bundle may carry (`NAMESPACES` in `test/build.test.js`):
+
+- `ns.adobe.com`: XMP itself. `http://ns.adobe.com/xap/1.0/` also opens a JPEG's XMP segment,
+  which is how picscrub and exifr find it.
+- `www.w3.org/1999/02/22-rdf-syntax-ns`: RDF, the syntax XMP is written in.
+- `purl.org/dc/elements`: Dublin Core, where XMP keeps the creator and the rights.
+- `c2pa.org/manifest`, `creativecommons.org/ns`, `www.inkscape.org`, `sodipodi.sourceforge.net`
+  and `www.bohemiancoding.com/sketch/ns`: what picscrub's SVG cleaner looks for (C2PA, licence,
+  Inkscape and Sketch metadata). Clean opens no SVG, but that cleaner shares a module with the
+  formats Clean uses, so the bundler keeps it.
+
 ## Development
 
 ```sh
@@ -122,6 +134,20 @@ The test files are made by that script: 16×16 gradients and hand-written PDFs w
 places and serial numbers, never anybody's photo or document. The cleaning is checked with exifr on
 the result, byte by byte on the image data (the JPEG scan, the PNG `IDAT`, the WebP bitstream, the
 HEIF image items), and by searching the clean PDF's raw bytes.
+
+| File | What it holds |
+| --- | --- |
+| `photo.jpg` | EXIF (GPS, make, model, lens, dates, orientation 6, artist, copyright, software, serial number, unique ID, maker note, thumbnail), XMP, IPTC, an ICC profile and a comment |
+| `wiped-gps.jpg` | the same EXIF and ICC profile, with the GPS fields zeroed the way Android's photo picker leaves them |
+| `motion.jpg` | a motion photo: EXIF, XMP that says it is one, and a video after the end of the image |
+| `photo.png` | `tEXt` (author, software, creation time), `zTXt`, `iTXt` with XMP, `eXIf`, `tIME` and `iCCP` |
+| `photo.webp` | a lossless WebP with `EXIF`, `XMP ` and `ICCP` chunks |
+| `photo.heic` | a HEIF container with an Exif item, an XMP item, an ICC colour property and a thumbnail item; its HEVC bytes are a stand-in that nothing here decodes |
+| `document.pdf` | Info, XMP in the catalogue and on an image, a comment with an author, an attachment, and an incremental update that left an older Info behind |
+| `locked.pdf` | a PDF with an `/Encrypt` dictionary |
+| `signed.pdf` | a PDF with a signature field and its `/ByteRange` |
+| `broken.jpg` | a JPEG cut in the middle of a segment |
+| `broken.pdf` | text that is not a PDF |
 
 `dist/` is generated and **committed**: what the catalogue signs is `module.json` + `dist/`, and the
 CI fails if `dist/` does not come out of `src/`. It weighs about 600 KB (about 230 KB compressed); a
